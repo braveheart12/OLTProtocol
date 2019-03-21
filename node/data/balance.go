@@ -11,7 +11,7 @@ import (
 // Wrap the amount with owner information
 type Balance struct {
 	// Address id.Address
-	Amounts map[int]Coin
+	Amounts map[CurrencyId]Coin
 }
 
 func init() {
@@ -19,17 +19,32 @@ func init() {
 }
 
 func NewBalance() *Balance {
-	amounts := make(map[int]Coin, 0)
+	amounts := make(map[CurrencyId]Coin, 0)
 	result := &Balance{
 		Amounts: amounts,
 	}
 	return result
 }
 
+//NewBalanceFromAdapter gives the balance object from a deserialized
+// balance adapter
+func NewBalanceFromAdapter(data interface{}) (*Balance, error) {
+
+	ba, ok := data.(BalanceAdapter)
+	if !ok {
+		return nil, ErrWrongBalanceAdapter
+	}
+
+	return ba.Extract()
+}
+
+
 func NewBalanceFromString(amount string, currency string) *Balance {
+
 	coin := NewCoinFromString(amount, currency)
 	balance := NewBalance()
 	balance.AddCoin(coin)
+
 	return balance
 }
 
@@ -93,7 +108,7 @@ func (b *Balance) GetCoin(currency Currency) Coin {
 
 // TODO: GetCoinByName?
 func (b *Balance) GetAmountByName(name string) Coin {
-	currency := NewCurrency(name)
+	currency := GetCurrency(name)
 	result := b.FindCoin(currency)
 	if result == nil {
 		// NOTE: Missing coins are actually zero value coins.
@@ -131,7 +146,7 @@ func (b Balance) IsEnoughBalance(balance Balance) bool {
 	return true
 }
 
-//String used in fmt and Dump
+//String used in fmt and Dumppython
 func (balance Balance) String() string {
 	buffer := ""
 	for _, coin := range balance.Amounts {
@@ -141,4 +156,8 @@ func (balance Balance) String() string {
 		buffer += coin.String()
 	}
 	return buffer
+}
+
+func (b *Balance) Data() *BalanceAdapter {
+	return NewBalanceAdapter(b)
 }
