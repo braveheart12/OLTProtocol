@@ -13,16 +13,16 @@ var (
 	ErrWrongBalanceAdapter = errors.New("error in asserting to BalanceAdapter")
 )
 
-//BalanceAdapter is an easy to serailize representation of a Balance object. A full Balance object can be recostructed
+// BalanceAdapter is an easy to serailize representation of a Balance object. A full Balance object can be recostructed
 // from a BalanceAdapter object and vice versa.
-//There is a map flattening ofcourse for
+// There is a map flattening ofcourse for
 type BalanceAdapter struct {
 	balance *Balance
 
 	Data []CoinData `json:"data"`
 }
 
-//CoinData is a flattening of coin in a balance data type
+// CoinData is a flattening of coin in a balance data type
 type CoinData struct {
 	CurId    CurrencyId `json:"curr_id"`
 	CurName  string     `json:"curr_name"`
@@ -31,7 +31,7 @@ type CoinData struct {
 	Amount string `json:"amt"`
 }
 
-//NewBalanceAdapter creates a BalanceAdapter from a given Balance object,
+// NewBalanceAdapter creates a BalanceAdapter from a given Balance object,
 // the coins are flattened to a list in the generator itself
 // ideally there should be no change done to a data after this step. This datatype can go straight to serialization.
 func NewBalanceAdapter(bal *Balance) *BalanceAdapter {
@@ -53,7 +53,7 @@ func NewBalanceAdapter(bal *Balance) *BalanceAdapter {
 	return badap
 }
 
-//Extract recreates the Balance object form the Data BalanceAdapter holds after deserialization/
+// Extract recreates the Balance object form the Data BalanceAdapter holds after deserialization/
 func (ba *BalanceAdapter) Extract() (*Balance, error) {
 	b := &Balance{}
 
@@ -62,6 +62,7 @@ func (ba *BalanceAdapter) Extract() (*Balance, error) {
 
 		curID := d[i].CurId
 
+		//convert string representation to big int
 		amt := new(big.Int)
 		_, err := fmt.Sscan(d[i].Amount, amt)
 		if err != nil {

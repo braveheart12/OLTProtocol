@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	//register data types in file for serialization
+	// register data types in file for serialization
 	serial.Register(Coin{})
 }
 

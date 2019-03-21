@@ -76,20 +76,20 @@ var CurrenciesExtra map[string]Extra
 func (c Currency) Key() string {
 	hasher := ripemd160.New()
 
-	//serialize to a
+	// serialize to a
 	b, err := serial.Serialize(c, serial.JSON)
 	if err != nil {
 		log.Fatal("hash serialize failed", "err", err)
 	}
 
-	//hash the binary data
+	// hash the binary data
 	_, err = hasher.Write(b)
 	if err != nil {
 		log.Fatal("hasher failed", "err", err)
 	}
 	b = hasher.Sum(nil)
 
-	//encode to hex representation
+	// encode to hex representation
 	return hex.EncodeToString(b)
 }
 
@@ -98,12 +98,12 @@ func GetCurrency(currency string) Currency {
 	return Currencies[currency]
 }
 
-//Get base of a currency
+// Get base of a currency
 func GetBase(currency string) *big.Float {
 	return GetExtra(currency).Units
 }
 
-//Get a CurrencyExtra by its name
+// Get a CurrencyExtra by its name
 func GetExtra(currency string) Extra {
 	if value, ok := CurrenciesExtra[currency]; ok {
 		return value
