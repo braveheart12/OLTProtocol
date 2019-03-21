@@ -80,3 +80,4 @@ See [Make Targets](#make-targets) to see a list of `make` commands you can run t
 ## License
 
 The OneLedger Protocol is released under the terms of the Apache 2.0 license. See [LICENSE.md](LICENSE.md) for more details or visit https://www.apache.org/licenses/LICENSE-2.0.html.
+
