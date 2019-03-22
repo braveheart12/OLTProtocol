@@ -26,17 +26,6 @@ func NewBalance() *Balance {
 	return result
 }
 
-//NewBalanceFromAdapter gives the balance object from a deserialized
-// balance adapter
-func NewBalanceFromAdapter(data interface{}) (*Balance, error) {
-
-	ba, ok := data.(BalanceAdapter)
-	if !ok {
-		return nil, ErrWrongBalanceAdapter
-	}
-
-	return ba.Extract()
-}
 
 
 func NewBalanceFromString(amount string, currency string) *Balance {
@@ -158,6 +147,29 @@ func (balance Balance) String() string {
 	return buffer
 }
 
-func (b *Balance) Data() *BalanceAdapter {
+
+//NewBalanceFromAdapter gives the balance object from a deserialize'd
+// balance adapter
+func ExtractBalanceData(data interface{}) (*Balance, error) {
+
+	ba, ok := data.(BalanceAdapter)
+	if !ok {
+		return nil, ErrWrongBalanceAdapter
+	}
+
+	return ba.Extract()
+}
+
+// GetAdapter gets the data adapter for a Balance object.
+// This function should be called before deserialization, the adapter object returned by this function
+// should be sent as a unmarshal target to the deserialize function.
+// After that the method Extract can be called on BalanceAdapter to get the Balance object.
+func (b *Balance) GetBlankDataAdapter() *BalanceAdapter {
+	return NewBalanceAdapter(b)
+}
+
+// PrepData converts Balance data type to an easily serializable, flat representation.
+// Ideally this function should be called before any serialization into any binary format.
+func (b *Balance) MakeDataAdapter() *BalanceAdapter {
 	return NewBalanceAdapter(b)
 }

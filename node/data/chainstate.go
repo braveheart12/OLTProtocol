@@ -45,7 +45,9 @@ func NewChainState(name string, newType StorageType) *ChainState {
 
 // Do this only for the Delivery side
 func (state *ChainState) Set(key DatabaseKey, balance *Balance) {
-	buffer, err := serial.Serialize(balance, serial.PERSISTENT)
+
+	balanceData := balance.MakeDataAdapter()
+	buffer, err := serial.Serialize(balanceData, serial.PERSISTENT)
 	if err != nil {
 		log.Fatal("Failed to Deserialize balance: ", err)
 	}
@@ -62,7 +64,9 @@ func (state *ChainState) FindAll() map[string]*Balance {
 		key, value := state.Delivered.GetByIndex(i)
 
 		var balance Balance
-		result, err := serial.Deserialize(value, balance, serial.PERSISTENT)
+		balanceData := balance.GetBlankDataAdapter()
+		result, err := serial.Deserialize(value, balanceData, serial.PERSISTENT)
+
 		if err != nil {
 			log.Fatal("Failed to Deserialize: FindAll", "i", i, "key", string(key))
 			continue
@@ -94,7 +98,8 @@ func (state *ChainState) Get(key DatabaseKey, lastCommit bool) *Balance {
 
 	if value != nil {
 		var balance *Balance
-		result, err := serial.Deserialize(value, balance, serial.PERSISTENT)
+		balanceData := balance.GetBlankDataAdapter()
+		result, err := serial.Deserialize(value, balanceData, serial.PERSISTENT)
 		if err != nil {
 			log.Fatal("Failed to deserialize Balance in chainstate: ", err)
 			return nil
