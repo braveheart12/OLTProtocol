@@ -63,8 +63,7 @@ func (state *ChainState) FindAll() map[string]*Balance {
 	for i := int64(0); i < state.Delivered.Size(); i++ {
 		key, value := state.Delivered.GetByIndex(i)
 
-		var balance Balance
-		balanceData := balance.GetBlankDataAdapter()
+		var balanceData BalanceAdapter
 		result, err := serial.Deserialize(value, balanceData, serial.PERSISTENT)
 
 		if err != nil {
@@ -72,8 +71,12 @@ func (state *ChainState) FindAll() map[string]*Balance {
 			continue
 		}
 
-		final := result.(Balance)
-		mapping[string(key)] = &final
+		balanceData = result.(BalanceAdapter)
+		final, err := balanceData.Extract()
+		if err != nil {
+			log.Error("Failed to Deserialize: FindAll", "i", i, "key", string(key))
+		}
+		mapping[string(key)] = final
 	}
 	return mapping
 }
@@ -97,14 +100,21 @@ func (state *ChainState) Get(key DatabaseKey, lastCommit bool) *Balance {
 	}
 
 	if value != nil {
-		var balance *Balance
-		balanceData := balance.GetBlankDataAdapter()
+		var balanceData BalanceAdapter
+
 		result, err := serial.Deserialize(value, balanceData, serial.PERSISTENT)
 		if err != nil {
 			log.Fatal("Failed to deserialize Balance in chainstate: ", err)
 			return nil
 		}
-		final := result.(*Balance)
+		resultData := result.(*BalanceAdapter)
+
+		final, err := resultData.Extract()
+		if err != nil {
+			log.Error("Failed to deserialize Balance in chainstate: ", err)
+			return nil
+		}
+
 		return final
 	}
 

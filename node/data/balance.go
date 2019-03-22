@@ -11,7 +11,7 @@ import (
 // Wrap the amount with owner information
 type Balance struct {
 	// Address id.Address
-	Amounts map[CurrencyId]Coin
+	Amounts map[int]Coin
 }
 
 func init() {
@@ -19,7 +19,7 @@ func init() {
 }
 
 func NewBalance() *Balance {
-	amounts := make(map[CurrencyId]Coin, 0)
+	amounts := make(map[int]Coin, 0)
 	result := &Balance{
 		Amounts: amounts,
 	}
@@ -160,13 +160,6 @@ func ExtractBalanceData(data interface{}) (*Balance, error) {
 	return ba.Extract()
 }
 
-// GetAdapter gets the data adapter for a Balance object.
-// This function should be called before deserialization, the adapter object returned by this function
-// should be sent as a unmarshal target to the deserialize function.
-// After that the method Extract can be called on BalanceAdapter to get the Balance object.
-func (b *Balance) GetBlankDataAdapter() *BalanceAdapter {
-	return NewBalanceAdapter(b)
-}
 
 // PrepData converts Balance data type to an easily serializable, flat representation.
 // Ideally this function should be called before any serialization into any binary format.

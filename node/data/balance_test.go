@@ -24,17 +24,24 @@ func xTestNewBalance(t *testing.T) {
 
 func TestSerialize(t *testing.T) {
 	a := NewBalanceFromString("10", "OLT")
-	buffer, err := serial.Serialize(a, serial.PERSISTENT)
+	buffer, err := serial.Serialize(a.MakeDataAdapter(), serial.PERSISTENT)
 	if err != nil {
 		log.Fatal("Serialization Failed", "err", err)
 	}
-	var proto Balance
+	var protoData *BalanceAdapter
 
-	result, err := serial.DumpDeserialize(buffer, proto, serial.PERSISTENT)
-	if err != nil {
+	result, err1 := serial.DumpDeserialize(buffer, protoData, serial.PERSISTENT)
+	if err1 != nil {
 		log.Fatal("Deserialized failed", "err", err)
 	}
-	assert.Equal(t, result, a, "These should be equal")
+
+	protoD, ok := result.(*BalanceAdapter)
+	assert.True(t, ok)
+	fmt.Println(protoD, result)
+
+	proto, err2 := protoD.Extract()
+	assert.Equal(t, a, proto, "These should be equal")
+	assert.Nil(t, err2)
 }
 
 func TestBalance_AddAmmount(t *testing.T) {

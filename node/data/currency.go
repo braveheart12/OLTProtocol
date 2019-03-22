@@ -22,19 +22,20 @@ const (
 func init() {
 
 	serial.Register(Currency{})
+	serial.Register(CurrencyId(0))
 
 	Currencies = map[string]Currency{
-		"OLT": Currency{"OLT", ONELEDGER, OLT},
-		"BTC": Currency{"BTC", BITCOIN, BTC},
-		"ETH": Currency{"ETH", ETHEREUM, ETH},
-		"VT":  Currency{"VT", ONELEDGER, VT},
+		"OLT": Currency{"OLT", ONELEDGER, 0},
+		"BTC": Currency{"BTC", BITCOIN, 1},
+		"ETH": Currency{"ETH", ETHEREUM, 2},
+		"VT":  Currency{"VT", ONELEDGER, 3},
 	}
 
-	CurrencyIdMap = map[CurrencyId]string{
-		OLT: "OLT",
-		BTC: "BTC",
-		ETH: "ETH",
-		VT:  "VT",
+	CurrencyIdMap = map[int]string{
+		0: "OLT",
+		1: "BTC",
+		2: "ETH",
+		3:  "VT",
 	}
 
 	CurrenciesExtra = map[string]Extra{
@@ -51,7 +52,7 @@ func init() {
 type Currency struct {
 	Name  string     `json:"name"`
 	Chain ChainType  `json:"chain"`
-	Id    CurrencyId `json:"id"`
+	Id    int `json:"id"`
 }
 
 // TODO: Separated from Currency to avoid serializing big floats and giving out this info
@@ -64,7 +65,7 @@ type Extra struct {
 // TODO: These need to be driven from a domain database, also they are many-to-one with chains
 var Currencies map[string]Currency
 
-var CurrencyIdMap map[CurrencyId]string
+var CurrencyIdMap map[int]string
 
 var CurrenciesExtra map[string]Extra
 
