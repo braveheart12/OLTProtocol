@@ -24,6 +24,9 @@ func init() {
 	serial.Register(Currency{})
 	serial.Register(CurrencyId(0))
 
+	// The currency configurations are initialized in init
+	// so that they can be loaded from a config file in future.
+
 	Currencies = map[string]Currency{
 		"OLT": Currency{"OLT", ONELEDGER, 0},
 		"BTC": Currency{"BTC", BITCOIN, 1},
@@ -55,12 +58,14 @@ type Currency struct {
 	Id    int `json:"id"`
 }
 
+
 // TODO: Separated from Currency to avoid serializing big floats and giving out this info
 type Extra struct {
 	Units   *big.Float
 	Decimal int
 	Format  uint8
 }
+
 
 // TODO: These need to be driven from a domain database, also they are many-to-one with chains
 var Currencies map[string]Currency
