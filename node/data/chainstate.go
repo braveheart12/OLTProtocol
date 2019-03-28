@@ -13,7 +13,7 @@ package data
 import (
 	"github.com/Oneledger/protocol/node/global"
 	"github.com/Oneledger/protocol/node/log"
-	"github.com/Oneledger/protocol/node/serial"
+	"github.com/Oneledger/protocol/node/serialize"
 	"github.com/tendermint/iavl"
 	"github.com/tendermint/tendermint/libs/db"
 )
@@ -46,37 +46,43 @@ func NewChainState(name string, newType StorageType) *ChainState {
 // Do this only for the Delivery side
 func (state *ChainState) Set(key DatabaseKey, balance *Balance) {
 
-	balanceData := balance.MakeDataAdapter()
-	buffer, err := serial.Serialize(balanceData, serial.PERSISTENT)
+	ser, err := serialize.GetSerializer(serialize.PERSISTENT)
 	if err != nil {
-		log.Fatal("Failed to Deserialize balance: ", err)
+		log.Error("error in getting serializer to set balance to delivered", err)
+		panic(err)
+	}
+
+	result, err := ser.Serialize(balance)
+	if err != nil {
+		log.Error("error in serializing to set balance", err)
+		panic(err)
 	}
 
 	// TODO: Get some error handling in here
-	state.Delivered.Set(key, buffer)
+	state.Delivered.Set(key, result)
 }
 
 // Expensive O(n) search through everything...
 func (state *ChainState) FindAll() map[string]*Balance {
 	mapping := make(map[string]*Balance, 1)
 
+	ser, err := serialize.GetSerializer(serialize.PERSISTENT)
+	if err != nil {
+		log.Error("error in getting serializer to get balance in FindAll", err)
+		panic(err) // will have to discuss this
+	}
+
 	for i := int64(0); i < state.Delivered.Size(); i++ {
 		key, value := state.Delivered.GetByIndex(i)
+		keyS := string(key)
 
-		var balanceData BalanceAdapter
-		result, err := serial.Deserialize(value, balanceData, serial.PERSISTENT)
-
+		var balance Balance
+		err = ser.Deserialize(value, &balance)
 		if err != nil {
-			log.Fatal("Failed to Deserialize: FindAll", "i", i, "key", string(key))
-			continue
+			log.Error("error in deserializing in FindAll", err, keyS)
 		}
 
-		balanceData = result.(BalanceAdapter)
-		final, err := balanceData.Extract()
-		if err != nil {
-			log.Error("Failed to Deserialize: FindAll", "i", i, "key", string(key))
-		}
-		mapping[string(key)] = final
+		mapping[keyS] = &balance
 	}
 	return mapping
 }
@@ -99,29 +105,29 @@ func (state *ChainState) Get(key DatabaseKey, lastCommit bool) *Balance {
 		_, value = state.Delivered.ImmutableTree.Get(key)
 	}
 
-	if value != nil {
-		var balanceData BalanceAdapter
 
-		result, err := serial.Deserialize(value, balanceData, serial.PERSISTENT)
-		if err != nil {
-			log.Fatal("Failed to deserialize Balance in chainstate: ", err)
-			return nil
-		}
-		resultData := result.(*BalanceAdapter)
-
-		final, err := resultData.Extract()
-		if err != nil {
-			log.Error("Failed to deserialize Balance in chainstate: ", err)
-			return nil
-		}
-
-		return final
+	if value == nil {
+		// By definition, if a balance doesn't exist, it is zero
+		//empty := NewBalance(0, "OLT")
+		//return &empty
+		return nil
 	}
 
-	// By definition, if a balance doesn't exist, it is zero
-	//empty := NewBalance(0, "OLT")
-	//return &empty
-	return nil
+	ser, err := serialize.GetSerializer(serialize.PERSISTENT)
+	if err != nil {
+		log.Error("error in getting serializer to get balance in FindAll", err)
+		panic(err) // will have to discuss this
+	}
+	keyS := string(key)
+
+	var balance Balance
+	err = ser.Deserialize(value, &balance)
+	if err != nil {
+		log.Error("error in deserializing in FindAll", err, keyS)
+	}
+
+	return &balance
+
 }
 
 // TODO: Should be against the commit tree, not the delivered one!!!

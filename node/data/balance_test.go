@@ -2,12 +2,10 @@ package data
 
 import (
 	"fmt"
+	"github.com/Oneledger/protocol/node/serialize"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"github.com/Oneledger/protocol/node/log"
-	"github.com/Oneledger/protocol/node/serial"
 )
 
 func xTestNewBalance(t *testing.T) {
@@ -24,24 +22,18 @@ func xTestNewBalance(t *testing.T) {
 
 func TestSerialize(t *testing.T) {
 	a := NewBalanceFromString("10", "OLT")
-	buffer, err := serial.Serialize(a.MakeDataAdapter(), serial.PERSISTENT)
-	if err != nil {
-		log.Fatal("Serialization Failed", "err", err)
-	}
-	var protoData *BalanceAdapter
 
-	result, err1 := serial.DumpDeserialize(buffer, protoData, serial.PERSISTENT)
-	if err1 != nil {
-		log.Fatal("Deserialized failed", "err", err)
-	}
+	ser, err := serialize.GetSerializer(serialize.PERSISTENT)
+	assert.Nil(t, err)
 
-	protoD, ok := result.(*BalanceAdapter)
-	assert.True(t, ok)
-	fmt.Println(protoD, result)
+	buffer, err := ser.Serialize(a)
+	assert.Nil(t, err)
 
-	proto, err2 := protoD.Extract()
+	proto := &Balance{}
+	err = ser.Deserialize(buffer, proto)
+	assert.Nil(t, err)
+
 	assert.Equal(t, a, proto, "These should be equal")
-	assert.Nil(t, err2)
 }
 
 func TestBalance_AddAmmount(t *testing.T) {

@@ -146,23 +146,3 @@ func (balance Balance) String() string {
 	}
 	return buffer
 }
-
-
-//NewBalanceFromAdapter gives the balance object from a deserialize'd
-// balance adapter
-func ExtractBalanceData(data interface{}) (*Balance, error) {
-
-	ba, ok := data.(BalanceAdapter)
-	if !ok {
-		return nil, ErrWrongBalanceAdapter
-	}
-
-	return ba.Extract()
-}
-
-
-// PrepData converts Balance data type to an easily serializable, flat representation.
-// Ideally this function should be called before any serialization into any binary format.
-func (b *Balance) MakeDataAdapter() *BalanceAdapter {
-	return NewBalanceAdapter(b)
-}
