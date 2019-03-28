@@ -2,6 +2,7 @@ package data
 
 import (
 	"encoding/hex"
+	"github.com/Oneledger/protocol/node/serialize"
 	"math/big"
 
 	"github.com/Oneledger/protocol/node/log"
@@ -48,6 +49,13 @@ func init() {
 		"VT":  Extra{big.NewFloat(1), 0, 'f'},
 	}
 
+
+
+	keySer, errKeySer = serialize.GetSerializer(serialize.JSON)
+	if errKeySer != nil {
+		log.Fatal("error initializing serializer")
+	}
+
 }
 
 //Currency datatype holds the type of curency,
@@ -75,28 +83,33 @@ var CurrencyIdMap map[int]string
 var CurrenciesExtra map[string]Extra
 
 //
+var keySer serialize.Serializer
+var errKeySer error
+
 //
 //
 // Key sets a encodable key for the currency entry,
 // we may end up using currencyCodes instead.
-func (c Currency) Key() string {
-	hasher := ripemd160.New()
+func (c Currency) Key() (string, error) {
 
-	// serialize to a
-	b, err := serial.Serialize(c, serial.JSON)
+	b, err := keySer.Serialize(c)
 	if err != nil {
-		log.Fatal("hash serialize failed", "err", err)
+		return "", err
 	}
+
+
+	hasher := ripemd160.New()
 
 	// hash the binary data
 	_, err = hasher.Write(b)
 	if err != nil {
-		log.Fatal("hasher failed", "err", err)
+		log.Error("hasher failed", "err", err)
+		return "", err
 	}
 	b = hasher.Sum(nil)
 
 	// encode to hex representation
-	return hex.EncodeToString(b)
+	return hex.EncodeToString(b), nil
 }
 
 // Look up the currency by its name

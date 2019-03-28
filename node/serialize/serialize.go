@@ -10,38 +10,44 @@ const (
 	CLIENT Channel = iota
 	PERSISTENT
 	NETWORK
+	JSON
 )
 
 var aminoCodec *amino.Codec
+
 func init() {
 	aminoCodec = amino.NewCodec()
 }
-
 
 type Serializer interface {
 	Serialize(obj interface{}) ([]byte, error)
 	Deserialize(d []byte, obj interface{}) error
 }
 
+// GetSerializer for a channel
 func GetSerializer(channel Channel, args ...interface{}) (Serializer, error) {
 
 	switch channel {
 
 	case CLIENT:
-		return &jsonStrategy{}, nil
+		return &msgpackStrategy{}, nil
 
 	case PERSISTENT:
-
-		return &jsonStrategy{}, nil
+		return &msgpackStrategy{}, nil
 
 	case NETWORK:
+		return &msgpackStrategy{}, nil
 
+	case JSON:
 		return &jsonStrategy{}, nil
+
 	default:
 		return nil, ErrIncorrectChannel
 	}
 }
 
+
+// functions to register types
 func RegisterInterface(obj interface{}) {
 	aminoCodec.RegisterInterface(obj, &amino.InterfaceOptions{AlwaysDisambiguate: true})
 }

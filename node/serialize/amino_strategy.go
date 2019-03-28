@@ -23,7 +23,6 @@ func (a *aminoStrategy) Serialize(obj interface{}) ([]byte, error) {
 
 		log.Warn("amino strategy does not support adapters")
 	}
-
 	bz, err := a.codec.MarshalBinaryLengthPrefixed(obj)
 
 	return bz, err
