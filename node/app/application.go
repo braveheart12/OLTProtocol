@@ -8,6 +8,7 @@ package app
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/Oneledger/protocol/node/serialize"
 	"time"
 
 	"github.com/Oneledger/protocol/node/abci"
@@ -146,15 +147,13 @@ type State struct {
 func (app Application) SetupState(stateBytes []byte) {
 	log.Debug("SetupState", "state", string(stateBytes))
 
-	var base BasicState
-
 	// Tendermint serializes this data, so we have to use raw JSON serialization to read it.
-	des, errx := serial.Deserialize(stateBytes, &base, serial.JSON)
+	state := &BasicState{}
+	errx := serialize.JSONSzr.Deserialize(stateBytes, state)
 	if errx != nil {
 		log.Fatal("Failed to deserialize stateBytes during SetupState")
 	}
 
-	state := des.(*BasicState)
 	log.Debug("Deserialized State", "state", state)
 
 	// TODO: Can't generate a different key for each node. Needs to be in the genesis? Or ignored?

@@ -14,9 +14,12 @@ const (
 )
 
 var aminoCodec *amino.Codec
+var JSONSzr Serializer
 
 func init() {
 	aminoCodec = amino.NewCodec()
+
+	JSONSzr, _ = GetSerializer(JSON)
 }
 
 type Serializer interface {

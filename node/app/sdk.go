@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Oneledger/protocol/node/serialize"
 	"reflect"
 	"strconv"
 
@@ -93,7 +94,8 @@ func (server SDKServer) Request(ctx context.Context, request *pb.SDKRequest) (*p
 }
 
 func HandleTypeError(message string) []byte {
-	result, err := serial.Serialize(message, serial.CLIENT)
+
+	result, err := serialize.JSONSzr.Serialize(message)
 	if err != nil {
 		log.Fatal("Failed to Serialize", "err", err)
 	}
@@ -218,7 +220,8 @@ func (server SDKServer) Send(ctx context.Context, request *pb.SendRequest) (*pb.
 
 func (server SDKServer) Tx(ctx context.Context, request *pb.TxRequest) (*pb.SDKReply, error) {
 	result := comm.Tx(request.Hash, request.Proof)
-	buff, err := serial.Serialize(result, serial.JSON)
+
+	buff, err := serialize.JSONSzr.Serialize(result)
 	if err != nil {
 		return nil, gstatus.Error(codes.Internal, err.Error())
 	}
@@ -227,7 +230,8 @@ func (server SDKServer) Tx(ctx context.Context, request *pb.TxRequest) (*pb.SDKR
 
 func (server SDKServer) TxSearch(ctx context.Context, request *pb.TxSearchRequest) (*pb.SDKReply, error) {
 	result := comm.Search(request.Query, request.Proof, int(request.Page), int(request.PerPage))
-	buff, err := serial.Serialize(result, serial.JSON)
+
+	buff, err := serialize.JSONSzr.Serialize(result)
 	if err != nil {
 		return nil, gstatus.Error(codes.Internal, err.Error())
 	}

@@ -3,12 +3,12 @@ package main
 import (
 	gcontext "context"
 	"encoding/hex"
+	"github.com/Oneledger/protocol/node/serialize"
 	"os"
 
 	"github.com/Oneledger/protocol/node/cmd/shared"
 	"github.com/Oneledger/protocol/node/comm"
 	"github.com/Oneledger/protocol/node/sdk/pb"
-	"github.com/Oneledger/protocol/node/serial"
 	"github.com/spf13/cobra"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 )
@@ -51,12 +51,13 @@ func requestTx(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	var tx ctypes.ResultTx
-	_, err = serial.Deserialize(reply.Results, &tx, serial.JSON)
+	tx := &ctypes.ResultTx{}
+	err = serialize.JSONSzr.Deserialize(reply.Results, tx)
 	if err != nil {
 		shared.Console.Error("Deserialize failed", err)
 		os.Exit(1)
 	}
+
 	shared.Console.Info(tx)
 
 }

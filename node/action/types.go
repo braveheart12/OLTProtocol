@@ -10,6 +10,7 @@ package action
 import (
 	"bytes"
 	"github.com/Oneledger/protocol/node/comm"
+	"github.com/Oneledger/protocol/node/serialize"
 	"github.com/pkg/errors"
 
 	"strconv"
@@ -22,8 +23,12 @@ import (
 func init() {
 	serial.Register(Event{})
 	serial.Register(data.Script{})
+
+	clientSerializer, _ = serialize.GetSerializer(serialize.CLIENT)
 }
 
+
+var clientSerializer serialize.Serializer
 /*
 func NewSendInput(accountKey id.AccountKey, amount data.Coin) SendInput {
 
@@ -158,10 +163,12 @@ type Event struct {
 }
 
 func (e Event) ToKey() []byte {
-	buffer, err := serial.Serialize(e, serial.CLIENT)
+
+	buffer, err := clientSerializer.Serialize(e)
 	if err != nil {
 		log.Error("Failed to Serialize event key")
 	}
+
 	return buffer
 }
 

@@ -6,6 +6,7 @@
 package app
 
 import (
+	"github.com/Oneledger/protocol/node/serialize"
 	"strings"
 
 	"github.com/Oneledger/protocol/node/action"
@@ -13,7 +14,6 @@ import (
 	"github.com/Oneledger/protocol/node/global"
 	"github.com/Oneledger/protocol/node/id"
 	"github.com/Oneledger/protocol/node/log"
-	"github.com/Oneledger/protocol/node/serial"
 	"github.com/Oneledger/protocol/node/status"
 )
 
@@ -40,10 +40,11 @@ func HandleSet(app Application, path string, arguments map[string]interface{}) [
 		return nil
 	}
 
-	buffer, err := serial.Serialize(result, serial.CLIENT)
+	buffer, err := clientSerializer.Serialize(result)
 	if err != nil {
 		log.Fatal("Failed to serialize query", "err", err)
 	}
+
 	return buffer
 }
 
@@ -149,16 +150,20 @@ func CreateRegisterRequest(identityName string, accountKey id.AccountKey, fee fl
 func SetOption(app *Application, key string, value string) bool {
 	log.Debug("Setting Application Options", "key", key, "value", value)
 
+	ser, _ := serialize.GetSerializer(serialize.NETWORK)
+
 	switch key {
 
 	case "Register":
-		var arguments RegisterArguments
-		result, err := serial.Deserialize([]byte(value), &arguments, serial.NETWORK)
+
+		args := &RegisterArguments{}
+
+		err := ser.Deserialize([]byte(value), args)
 		if err != nil {
 			log.Error("Can't set options", "status", err)
 			return false
 		}
-		args := result.(*RegisterArguments)
+
 		privateKey, publicKey := id.GenerateKeys([]byte(args.Identity), true) // TODO: Switch with passphrase
 		AddAccount(app, args.Identity, id.ParseAccountType(args.Chain), publicKey, privateKey, nil, false)
 

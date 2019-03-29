@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"github.com/Oneledger/protocol/node/data"
+	"github.com/Oneledger/protocol/node/serialize"
 	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"strings"
@@ -275,10 +276,12 @@ func (h *HTLContract) Chain() data.ChainType {
 }
 
 func (h *HTLContract) ToBytes() []byte {
-	msg, err := serial.Serialize(h, serial.JSON)
+
+	msg, err := serialize.JSONSzr.Serialize(h)
 	if err != nil {
 		log.Error("Failed to serialize htlc", "err", err)
 	}
+
 	return msg
 }
 
@@ -287,9 +290,11 @@ func (h *HTLContract) ToKey() []byte {
 }
 
 func (h *HTLContract) FromBytes(message []byte) {
-	_, err := serial.Deserialize(message, h, serial.JSON)
+
+	err := serialize.JSONSzr.Deserialize(message, h)
 	if err != nil {
 		log.Error("Failed deserialize ETH contract", "contract", message, "err", err)
 	}
+
 	return
 }

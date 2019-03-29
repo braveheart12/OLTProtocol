@@ -6,6 +6,7 @@ import (
 	"github.com/Oneledger/protocol/node/global"
 	"github.com/Oneledger/protocol/node/id"
 	"github.com/Oneledger/protocol/node/log"
+	"github.com/Oneledger/protocol/node/serialize"
 	"time"
 
 	"github.com/Oneledger/protocol/node/serial"
@@ -15,23 +16,31 @@ import (
 
 //general hash method
 func _hashToStringBytes(item interface{}) []byte {
+
 	sum := _hash(item)
+
 	sumStr := hex.EncodeToString(sum[:])
+
 	return []byte(sumStr)
 }
 
 func _hash(item interface{}) []byte {
 
+	// initialize hasher
 	hasher := ripemd160.New()
 
-	buffer, err := serial.Serialize(item, serial.JSON)
+	// serialize as json
+	buffer, err := serialize.JSONSzr.Serialize(item)
 	if err != nil {
 		log.Fatal("hash serialize failed", "err", err)
 	}
+
+	// hash the item
 	_, err = hasher.Write(buffer)
 	if err != nil {
 		log.Fatal("hasher failed", "err", err)
 	}
+
 	return hasher.Sum(nil)
 }
 

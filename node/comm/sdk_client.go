@@ -2,6 +2,7 @@ package comm
 
 import (
 	"context"
+	"github.com/Oneledger/protocol/node/serialize"
 
 	"google.golang.org/grpc"
 
@@ -11,6 +12,12 @@ import (
 	"github.com/Oneledger/protocol/node/sdk/pb"
 	"github.com/Oneledger/protocol/node/serial"
 )
+
+func init() {
+	clientSerializer, _ = serialize.GetSerializer(serialize.CLIENT)
+}
+
+var clientSerializer serialize.Serializer
 
 func NewSDKClient() pb.SDKClient {
 	address := global.Current.Config.Network.SDKAddress
@@ -28,10 +35,12 @@ func NewSDKClient() pb.SDKClient {
 
 // Register the request
 func SDKRequest(base interface{}) interface{} {
-	buffer, err := serial.Serialize(base, serial.CLIENT)
+
+	buffer, err := clientSerializer.Serialize(base)
 	if err != nil {
 		log.Fatal("Serialize Failed", "err", err)
 	}
+
 	client := NewSDKClient()
 	context := context.Background()
 

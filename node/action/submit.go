@@ -55,6 +55,7 @@ func SignAndPack(transaction Transaction) []byte {
 
 // SignTransaction with the local keys
 func SignTransaction(transaction Transaction) SignedTransaction {
+
 	packet, err := serial.Serialize(transaction, serial.CLIENT)
 
 	signed := SignedTransaction{transaction, nil}

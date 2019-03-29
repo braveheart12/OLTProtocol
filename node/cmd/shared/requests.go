@@ -7,12 +7,11 @@
 package shared
 
 import (
+	"github.com/Oneledger/protocol/node/serialize"
 	uuid2 "github.com/google/uuid"
 	"os"
 
 	"github.com/Oneledger/protocol/node/comm"
-	"github.com/Oneledger/protocol/node/serial"
-
 	"regexp"
 	"strconv"
 
@@ -27,6 +26,20 @@ import (
 func SignAndPack(transaction action.Transaction) []byte {
 	return action.SignAndPack(transaction)
 }
+
+
+func init() {
+
+	var err error
+	requestSerializer, err = serialize.GetSerializer(serialize.CLIENT)
+	if err != nil {
+		log.Fatal("error in initializing serializer", err)
+	}
+}
+
+
+var requestSerializer serialize.Serializer
+
 
 // Registration
 type AccountArguments struct {
@@ -90,7 +103,8 @@ func CreateBalanceRequest(args *BalanceArguments) []byte {
 
 // CreateRequest builds and signs the transaction based on the arguments
 func CreateApplyValidatorRequest(args *comm.ApplyValidatorArguments) []byte {
-	request, err := serial.Serialize(args, serial.CLIENT)
+
+	request, err := requestSerializer.Serialize(args)
 	if err != nil {
 		log.Error("Failed to Serialize arguments: ", err)
 		return nil
@@ -146,7 +160,7 @@ type ContractArguments struct {
 
 // CreateRequest builds and signs the transaction based on the arguments
 func CreateSendRequest(args *comm.SendArguments) []byte {
-	request, err := serial.Serialize(args, serial.CLIENT)
+	request, err := requestSerializer.Serialize(args)
 
 	if err != nil {
 		log.Error("Failed to Serialize arguments: ", err)
@@ -165,7 +179,7 @@ func CreateSendRequest(args *comm.SendArguments) []byte {
 
 // CreateRequest builds and signs the transaction based on the arguments
 func CreateMintRequest(args *comm.SendArguments) []byte {
-	request, err := serial.Serialize(args, serial.CLIENT)
+	request, err := requestSerializer.Serialize(args)
 
 	if err != nil {
 		log.Error("Failed to Serialize arguments: ", err)
@@ -184,7 +198,7 @@ func CreateMintRequest(args *comm.SendArguments) []byte {
 
 // Create a swap request
 func CreateSwapRequest(args *comm.SwapArguments) []byte {
-	request, err := serial.Serialize(args, serial.CLIENT)
+	request, err := requestSerializer.Serialize(args)
 
 	if err != nil {
 		log.Error("Failed to Serialize arguments: ", err)
@@ -210,7 +224,7 @@ func CreateSwapRequest(args *comm.SwapArguments) []byte {
 }
 
 func CreateExSendRequest(args *comm.ExSendArguments) []byte {
-	request, err := serial.Serialize(args, serial.CLIENT)
+	request, err := requestSerializer.Serialize(args)
 
 	if err != nil {
 		log.Error("Failed to Serialize arguments: ", err)

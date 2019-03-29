@@ -7,6 +7,7 @@ package app
 
 import (
 	"encoding/hex"
+	"github.com/Oneledger/protocol/node/serialize"
 	"runtime/debug"
 	"strings"
 
@@ -27,6 +28,16 @@ import (
 	"github.com/Oneledger/protocol/node/version"
 )
 
+func init(){
+	var err error
+	clientSerializer, err = serialize.GetSerializer(serialize.CLIENT)
+	if err != nil {
+		log.Fatal("error in initializing the serializer")
+	}
+}
+
+var clientSerializer serialize.Serializer
+
 // Top-level list of all query types
 func HandleQuery(app Application, path string, arguments map[string]interface{}) (buffer []byte) {
 
@@ -34,7 +45,8 @@ func HandleQuery(app Application, path string, arguments map[string]interface{})
 		if r := recover(); r != nil {
 			log.Error("Query Panic", "status", r)
 			debug.PrintStack()
-			buffer, _ = serial.Serialize("Internal Query Error", serial.CLIENT)
+
+			buffer, _ = clientSerializer.Serialize("Internal Query Error")
 		}
 	}()
 
@@ -96,7 +108,7 @@ func HandleQuery(app Application, path string, arguments map[string]interface{})
 		result = HandleError("Unknown Query", path, arguments)
 	}
 
-	buffer, err := serial.Serialize(result, serial.CLIENT)
+	buffer, err := clientSerializer.Serialize(result)
 	if err != nil {
 		log.Debug("Failed to serialize query")
 	}
@@ -107,20 +119,19 @@ func HandleQuery(app Application, path string, arguments map[string]interface{})
 func HandleApplyValidatorQuery(application Application, arguments map[string]interface{}) interface{} {
 	log.Debug("HandleApplyValidatorQuery", "arguments", arguments)
 
-	var argsHolder comm.ApplyValidatorArguments
+	args := &comm.ApplyValidatorArguments{}
 
 	text := arguments["parameters"].([]byte)
 
-	args, err := serial.Deserialize(text, argsHolder, serial.CLIENT)
-
+	err := clientSerializer.Deserialize(text, args)
 	if err != nil {
 		log.Error("Could not deserialize ApplyValidatorArguments", "error", err)
 		return "Could not deserialize ApplyValidatorArguments" + " error=" + err.Error()
 	}
 
-	amount := args.(*comm.ApplyValidatorArguments).Amount
-	idName := args.(*comm.ApplyValidatorArguments).Id
-	purge := args.(*comm.ApplyValidatorArguments).Purge
+	amount := args.Amount
+	idName := args.Id
+	purge := args.Purge
 
 	nodeAccount := action.GetNodeAccount(application)
 	if nodeAccount == nil {
@@ -219,18 +230,16 @@ func HandleCreateExSendRequest(application Application, arguments map[string]int
 
 	result := make([]byte, 0)
 
-	var argsHolder comm.ExSendArguments
+	args := &comm.ExSendArguments{}
 
 	text := arguments["parameters"].([]byte)
 
-	argsDeserialized, err := serial.Deserialize(text, argsHolder, serial.CLIENT)
-
+	err := clientSerializer.Deserialize(text, args)
 	if err != nil {
 		log.Error("Could not deserialize ExSendArguments", "error", err)
 		return result
 	}
 
-	args := argsDeserialized.(*comm.ExSendArguments)
 
 	partyKey := AccountKey(application, args.SenderId)
 	cpartyKey := AccountKey(application, args.ReceiverId)
@@ -274,18 +283,15 @@ func HandleCreateSendRequest(application Application, arguments map[string]inter
 
 	result := make([]byte, 0)
 
-	var argsHolder comm.SendArguments
 
 	text := arguments["parameters"].([]byte)
 
-	argsDeserialized, err := serial.Deserialize(text, argsHolder, serial.CLIENT)
-
+	args := &comm.SendArguments{}
+	err := clientSerializer.Deserialize(text, args)
 	if err != nil {
 		log.Error("Could not deserialize SendArguments", "error", err)
 		return result
 	}
-
-	args := argsDeserialized.(*comm.SendArguments)
 
 	if args.Party == "" {
 		log.Error("Missing Party argument")
@@ -349,18 +355,16 @@ func HandleCreateSendRequest(application Application, arguments map[string]inter
 func HandleCreateMintRequest(application Application, arguments map[string]interface{}) interface{} {
 	result := make([]byte, 0)
 
-	var argsHolder comm.SendArguments
+	var args = &comm.SendArguments{}
 
 	text := arguments["parameters"].([]byte)
 
-	argsDeserialized, err := serial.Deserialize(text, argsHolder, serial.CLIENT)
-
+	err := clientSerializer.Deserialize(text, args)
 	if err != nil {
 		log.Error("Could not deserialize SendArguments", "error", err)
 		return result
 	}
 
-	args := argsDeserialized.(*comm.SendArguments)
 
 	conv := convert.NewConvert()
 
@@ -428,18 +432,16 @@ func HandleCreateMintRequest(application Application, arguments map[string]inter
 func HandleSwapRequest(application Application, arguments map[string]interface{}) interface{} {
 	result := make([]byte, 0)
 
-	var argsHolder comm.SwapArguments
-
 	text := arguments["parameters"].([]byte)
 
-	argsDeserialized, err := serial.Deserialize(text, argsHolder, serial.CLIENT)
+	var args = &comm.SwapArguments{}
 
+	err := clientSerializer.Deserialize(text, args)
 	if err != nil {
 		log.Error("Could not deserialize SwapArgumentsArguments", "error", err)
 		return result
 	}
 
-	args := argsDeserialized.(*comm.SwapArguments)
 
 	conv := convert.NewConvert()
 
@@ -790,7 +792,7 @@ func HandleError(text string, path string, arguments map[string]interface{}) int
 }
 
 func SignTransaction(transaction action.Transaction, application Application) action.SignedTransaction {
-	packet, err := serial.Serialize(transaction, serial.CLIENT)
+	packet, err := clientSerializer.Serialize(transaction)
 
 	signed := action.SignedTransaction{transaction, nil}
 
