@@ -86,6 +86,12 @@ var CurrenciesExtra map[string]Extra
 var keySer serialize.Serializer
 var errKeySer error
 
+
+// Look up the currency
+func NewCurrency(currency string) Currency {
+	return Currencies[currency]
+}
+
 //
 //
 // Key sets a encodable key for the currency entry,
