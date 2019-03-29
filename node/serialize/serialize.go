@@ -19,7 +19,7 @@ var JSONSzr Serializer
 func init() {
 	aminoCodec = amino.NewCodec()
 
-	JSONSzr, _ = GetSerializer(JSON)
+	JSONSzr = GetSerializer(JSON)
 }
 
 type Serializer interface {
@@ -27,25 +27,25 @@ type Serializer interface {
 	Deserialize(d []byte, obj interface{}) error
 }
 
-// GetSerializer for a channel
-func GetSerializer(channel Channel, args ...interface{}) (Serializer, error) {
+// GetSerializer for a channel of standard types, default is a JSON serializer
+func GetSerializer(channel Channel, args ...interface{}) Serializer {
 
 	switch channel {
 
 	case CLIENT:
-		return &msgpackStrategy{}, nil
+		return &msgpackStrategy{}
 
 	case PERSISTENT:
-		return &msgpackStrategy{}, nil
+		return &msgpackStrategy{}
 
 	case NETWORK:
-		return &msgpackStrategy{}, nil
+		return &msgpackStrategy{}
 
 	case JSON:
-		return &jsonStrategy{}, nil
+		return &jsonStrategy{}
 
 	default:
-		return nil, ErrIncorrectChannel
+		return &jsonStrategy{}
 	}
 }
 

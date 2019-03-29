@@ -150,7 +150,7 @@ func CreateRegisterRequest(identityName string, accountKey id.AccountKey, fee fl
 func SetOption(app *Application, key string, value string) bool {
 	log.Debug("Setting Application Options", "key", key, "value", value)
 
-	ser, _ := serialize.GetSerializer(serialize.NETWORK)
+	ser := serialize.GetSerializer(serialize.NETWORK)
 
 	switch key {
 

@@ -23,8 +23,7 @@ func xTestNewBalance(t *testing.T) {
 func TestSerialize(t *testing.T) {
 	a := NewBalanceFromString("10", "OLT")
 
-	ser, err := serialize.GetSerializer(serialize.PERSISTENT)
-	assert.Nil(t, err)
+	ser := serialize.GetSerializer(serialize.PERSISTENT)
 
 	buffer, err := ser.Serialize(a)
 	assert.Nil(t, err)

@@ -46,11 +46,7 @@ func NewChainState(name string, newType StorageType) *ChainState {
 // Do this only for the Delivery side
 func (state *ChainState) Set(key DatabaseKey, balance *Balance) {
 
-	ser, err := serialize.GetSerializer(serialize.PERSISTENT)
-	if err != nil {
-		log.Error("error in getting serializer to set balance to delivered", err)
-		panic(err)
-	}
+	ser:= serialize.GetSerializer(serialize.PERSISTENT)
 
 	result, err := ser.Serialize(balance)
 	if err != nil {
@@ -66,18 +62,14 @@ func (state *ChainState) Set(key DatabaseKey, balance *Balance) {
 func (state *ChainState) FindAll() map[string]*Balance {
 	mapping := make(map[string]*Balance, 1)
 
-	ser, err := serialize.GetSerializer(serialize.PERSISTENT)
-	if err != nil {
-		log.Error("error in getting serializer to get balance in FindAll", err)
-		panic(err) // will have to discuss this
-	}
+	ser:= serialize.GetSerializer(serialize.PERSISTENT)
 
 	for i := int64(0); i < state.Delivered.Size(); i++ {
 		key, value := state.Delivered.GetByIndex(i)
 		keyS := string(key)
 
 		var balance Balance
-		err = ser.Deserialize(value, &balance)
+		err := ser.Deserialize(value, &balance)
 		if err != nil {
 			log.Error("error in deserializing in FindAll", err, keyS)
 		}
@@ -113,15 +105,12 @@ func (state *ChainState) Get(key DatabaseKey, lastCommit bool) *Balance {
 		return nil
 	}
 
-	ser, err := serialize.GetSerializer(serialize.PERSISTENT)
-	if err != nil {
-		log.Error("error in getting serializer to get balance in FindAll", err)
-		panic(err) // will have to discuss this
-	}
+	ser := serialize.GetSerializer(serialize.PERSISTENT)
+
 	keyS := string(key)
 
 	var balance Balance
-	err = ser.Deserialize(value, &balance)
+	err := ser.Deserialize(value, &balance)
 	if err != nil {
 		log.Error("error in deserializing in FindAll", err, keyS)
 	}

@@ -30,11 +30,8 @@ func SignAndPack(transaction action.Transaction) []byte {
 
 func init() {
 
-	var err error
-	requestSerializer, err = serialize.GetSerializer(serialize.CLIENT)
-	if err != nil {
-		log.Fatal("error in initializing serializer", err)
-	}
+	requestSerializer = serialize.GetSerializer(serialize.CLIENT)
+
 }
 
 

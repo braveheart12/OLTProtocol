@@ -51,10 +51,7 @@ func init() {
 
 
 
-	keySer, errKeySer = serialize.GetSerializer(serialize.JSON)
-	if errKeySer != nil {
-		log.Fatal("error initializing serializer")
-	}
+	keySer = serialize.GetSerializer(serialize.JSON)
 
 }
 
@@ -84,7 +81,6 @@ var CurrenciesExtra map[string]Extra
 
 //
 var keySer serialize.Serializer
-var errKeySer error
 
 
 // Look up the currency

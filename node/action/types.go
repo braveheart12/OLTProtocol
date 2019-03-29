@@ -24,7 +24,7 @@ func init() {
 	serial.Register(Event{})
 	serial.Register(data.Script{})
 
-	clientSerializer, _ = serialize.GetSerializer(serialize.CLIENT)
+	clientSerializer = serialize.GetSerializer(serialize.CLIENT)
 }
 
 

@@ -29,11 +29,8 @@ import (
 )
 
 func init(){
-	var err error
-	clientSerializer, err = serialize.GetSerializer(serialize.CLIENT)
-	if err != nil {
-		log.Fatal("error in initializing the serializer")
-	}
+
+	clientSerializer = serialize.GetSerializer(serialize.CLIENT)
 }
 
 var clientSerializer serialize.Serializer

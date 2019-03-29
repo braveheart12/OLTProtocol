@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	clientSerializer, _ = serialize.GetSerializer(serialize.CLIENT)
+	clientSerializer = serialize.GetSerializer(serialize.CLIENT)
 }
 
 var clientSerializer serialize.Serializer
