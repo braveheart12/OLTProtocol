@@ -12,12 +12,12 @@
 package data
 
 import (
+	"github.com/Oneledger/protocol/node/serialize"
 	"os"
 	"path/filepath"
 
 	"github.com/Oneledger/protocol/node/global"
 	"github.com/Oneledger/protocol/node/log"
-	"github.com/Oneledger/protocol/node/serial"
 	"github.com/tendermint/iavl"
 	"github.com/tendermint/tendermint/libs/db"
 )
@@ -66,7 +66,8 @@ func fileExists(name string, dir string) bool {
 
 // Convert Data headed for persistence
 func convertData(data interface{}) []byte {
-	buffer, err := serial.Serialize(data, serial.PERSISTENT)
+	ser := serialize.GetSerializer(serialize.PERSISTENT)
+	buffer, err := ser.Serialize(data)
 	if err != nil {
 		log.Fatal("Persistent Serialization Failed", "err", err, "data", data)
 	}
@@ -79,12 +80,13 @@ func unconvertData(data []byte) interface{} {
 		return nil
 	}
 
-	var proto interface{}
-	result, err := serial.Deserialize(data, proto, serial.PERSISTENT)
+	result := new(interface{})
+	ser := serialize.GetSerializer(serialize.PERSISTENT)
+	err := ser.Deserialize(data, result)
 	if err != nil {
 		log.Fatal("Persistent Deserialization Failed", "err", err, "data", data)
 	}
-	return result
+	return *result
 }
 
 // NewKeyValue initializes a new application

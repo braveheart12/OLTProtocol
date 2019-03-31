@@ -53,7 +53,7 @@ func init() {
 }
 
 func (server SDKServer) Request(ctx context.Context, request *pb.SDKRequest) (*pb.SDKReply, error) {
-	var prototype interface{}
+
 	var err error
 	var result interface{}
 
@@ -61,12 +61,13 @@ func (server SDKServer) Request(ctx context.Context, request *pb.SDKRequest) (*p
 		return &pb.SDKReply{Results: []byte("Empty Data")}, nil
 	}
 
-	parameter, err := serial.Deserialize(request.Parameters, prototype, serial.CLIENT)
+	parameter := new(interface{})
+	err = clientSerializer.Deserialize(request.Parameters, parameter)
 	if err != nil {
 		log.Fatal("Deserialized Failed", "err", err, "data", string(request.Parameters))
 	}
 
-	switch base := parameter.(type) {
+	switch base := (*parameter).(type) {
 	case *SDKQuery:
 		result = HandleQuery(*server.App, base.Path, base.Arguments)
 
