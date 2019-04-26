@@ -20,7 +20,7 @@ func DefaultGenesisDoc() *GenesisDoc {
 	}
 	return &GenesisDoc{
 		GenesisTime:     time.Now(),
-		ChainID:         "OneLedger",
+		ChainID:         "chronos3",
 		ConsensusParams: types.DefaultConsensusParams(),
 		Validators:      validators,
 		AppState:        json.RawMessage(appStateBytes),
